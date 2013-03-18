@@ -76,7 +76,7 @@ abstract class _Token {
   int get hashCode => name.hashCode;
 }
 
-abstract class _StandAloneLineCapable {
+class _StandAloneLineCapable {
   
 }
 
@@ -215,7 +215,7 @@ class _ExpressionToken extends _Token {
   String toString() => "ExpressionToken($name)";
 }
 
-class _DelimiterToken extends _ExpressionToken implements _StandAloneLineCapable {
+class _DelimiterToken extends _ExpressionToken with _StandAloneLineCapable {
   
   _DelimiterToken(String val) : super.withSource(val, null);
   
@@ -285,7 +285,7 @@ class _PartialToken extends _ExpressionToken {
   bool get rendable => true;
 }
 
-class _CommentToken extends _ExpressionToken implements _StandAloneLineCapable {
+class _CommentToken extends _ExpressionToken with _StandAloneLineCapable {
   
   _CommentToken() : super.withSource(EMPTY_STRING, EMPTY_STRING);
   
@@ -312,7 +312,7 @@ class _EscapeHtmlToken extends _ExpressionToken {
   String toString() => "EscapeHtmlToken($name)";
 }
 
-class _StartSectionToken extends _ExpressionToken implements _StandAloneLineCapable {
+class _StartSectionToken extends _ExpressionToken with _StandAloneLineCapable {
   final Delimiter delimiter;
   _Token _computedNext;
   
@@ -379,7 +379,7 @@ class _StartSectionToken extends _ExpressionToken implements _StandAloneLineCapa
   String toString() => "StartSectionToken($name)";
 }
 
-class _EndSectionToken extends _ExpressionToken implements _StandAloneLineCapable {
+class _EndSectionToken extends _ExpressionToken with _StandAloneLineCapable {
   _EndSectionToken.withSource(String val, String source) : super.withSource(val, source);
 
   apply(MustacheContext ctx, [partial]) => EMPTY_STRING;
