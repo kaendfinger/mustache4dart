@@ -182,19 +182,19 @@ class _ExpressionToken extends _Token {
     String newVal = val.substring(1).trim();
 
     if ('#' == control) {
-      return new _StartSectionToken.withSource(newVal, source, delimiter);
+      return new _StartSectionToken(newVal, delimiter);
     } else if ('/' == control) {
-      return new _EndSectionToken.withSource(newVal, source);
+      return new _EndSectionToken(newVal);
     } else if ('^' == control) {
-      return new _InvertedSectionToken.withSource(newVal, source, delimiter);
+      return new _InvertedSectionToken(newVal, delimiter);
     } else if ('!' == control) {
       return new _CommentToken();
     } else if ('>' == control) {
-      return new _PartialToken(partial, newVal, source);
+      return new _PartialToken(partial, newVal);
     } else if ('=' == control) {
       return new _DelimiterToken(newVal);
     } else {
-      return new _EscapeHtmlToken.withSource(val, source);
+      return new _EscapeHtmlToken(val, source);
     }
   }
 
@@ -233,7 +233,7 @@ class _DelimiterToken extends _ExpressionToken with _StandAloneLineCapable {
 
 class _PartialToken extends _ExpressionToken {
   final Function partial;
-  _PartialToken(this.partial, String val, String source) : super.withSource(val, source);
+  _PartialToken(this.partial, String val) : super.withSource(val, null);
   
   apply(MustacheContext ctx) {
     if (_standAlone) {
@@ -293,7 +293,7 @@ class _CommentToken extends _ExpressionToken with _StandAloneLineCapable {
 }
 
 class _EscapeHtmlToken extends _ExpressionToken {
-  _EscapeHtmlToken.withSource(String val, String source) : super.withSource(val, source);
+  _EscapeHtmlToken(String val, String source) : super.withSource(val, source);
 
   apply(MustacheContext ctx) {
     var val = super.apply(ctx);
@@ -316,7 +316,7 @@ class _StartSectionToken extends _ExpressionToken with _StandAloneLineCapable {
   final Delimiter delimiter;
   _Token _computedNext;
   
-  _StartSectionToken.withSource(String val, String source, this.delimiter) : super.withSource(val, source);
+  _StartSectionToken(String val, this.delimiter) : super.withSource(val, null);
 
   //Override the next getter
   _Token get next => _computedNext != null ? _computedNext : super.next;
@@ -380,7 +380,7 @@ class _StartSectionToken extends _ExpressionToken with _StandAloneLineCapable {
 }
 
 class _EndSectionToken extends _ExpressionToken with _StandAloneLineCapable {
-  _EndSectionToken.withSource(String val, String source) : super.withSource(val, source);
+  _EndSectionToken.withSource(String val) : super.withSource(val, null);
 
   apply(MustacheContext ctx, [partial]) => EMPTY_STRING;
   
@@ -388,7 +388,7 @@ class _EndSectionToken extends _ExpressionToken with _StandAloneLineCapable {
 }
 
 class _InvertedSectionToken extends _StartSectionToken {
-  _InvertedSectionToken.withSource(String val, String source, Delimiter del) : super.withSource(val, source, del);
+  _InvertedSectionToken(String val, Delimiter del) : super(val, del);
   
   apply(MustacheContext ctx) {
     var val = ctx[name];
