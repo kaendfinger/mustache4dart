@@ -380,7 +380,7 @@ class _StartSectionToken extends _ExpressionToken with _StandAloneLineCapable {
 }
 
 class _EndSectionToken extends _ExpressionToken with _StandAloneLineCapable {
-  _EndSectionToken.withSource(String val) : super.withSource(val, null);
+  _EndSectionToken(String val) : super.withSource(val, null);
 
   apply(MustacheContext ctx, [partial]) => EMPTY_STRING;
   
