@@ -1,5 +1,5 @@
-Mustache for Dart [![Build Status](https://drone.io/github.com/valotas/mustache4dart/status.png)](https://drone.io/github.com/valotas/mustache4dart/latest)
-===========================================================================================================================================================
+Mustache for the dartlang [![Build Status](https://drone.io/github.com/valotas/mustache4dart/status.png)](https://drone.io/github.com/valotas/mustache4dart/latest)
+===================================================================================================================================================================
 A simple implementation of [Mustache][mustache] for the [Dart language][dartlang].
 This project started as an excuse for exploring the language itself, but the 
 final result, passes happily all the [mustache specs][specs]. If you want to 
@@ -27,11 +27,12 @@ if you give the template `{{firstname}}` for rendering, mustache4dart will try t
 2. search for a field named `firstname`
 3. search for a getter named `firstname`
 4. search for a method named `firstname`
+5. search for a method named `getFirstname`
 
 in each case the first valid value will be used.
 
 As a sidenote, you will get the best performance if you provide a proper implementation of
-the [] operator.
+the `[]` operator.
 
 ### Partials
 mustache4dart support partials but it needs somehow to know how to find a partial. You can
@@ -74,6 +75,7 @@ TODO
 ----
 - Introduce mixins in order to simplify some parts of the code
 - Make or add to the api an asynchronous mode
+- Introduce exceptions in case of a miss formated mustache source
 
 [mustache]: http://mustache.github.com/
 [dartlang]: http://www.dartlang.org/
