@@ -65,9 +65,6 @@ class MustacheContext {
     if (v == false) {
       return null;
     }
-    if (v == true) {
-      return true;
-    }
     if (v is Function) {
       return v;
     }
@@ -89,10 +86,6 @@ class MustacheContext {
   }
 
   _getValueWithReflection(String key) {
-    //There is no sync API as I see: http://code.google.com/p/dart/issues/detail?id=4633 
-    //As I do not feel switching everything to Future at the moment, we use the 
-    //deprecatedFutureValue as seen at 
-    //http://code.google.com/p/dart/source/browse/experimental/lib_v2/dart/sdk/lib/_internal/dartdoc/lib/src/json_serializer.dart?spec=svn16262&r=16262
     var m = mirror;
     var membersMirror = _findMemberMirror(m, key);
     
@@ -100,24 +93,24 @@ class MustacheContext {
       return null;
     }
     
-    var fim = null;
-    if (membersMirror is VariableMirror) {
-      fim = m.getFieldAsync(membersMirror.simpleName);
-    }
-    else if (membersMirror is MethodMirror && membersMirror.isGetter) {
-      fim = m.getFieldAsync(membersMirror.simpleName);
-    }
-    else if (membersMirror is MethodMirror && membersMirror.parameters.length == 0) {
-      fim = m.invokeAsync(membersMirror.simpleName, []);
-    }
-    else if (membersMirror is MethodMirror && membersMirror.parameters.length == 1) {
+    if (membersMirror is MethodMirror && membersMirror.parameters.length == 1) {
+      //this is the case of a lambda value
       return _toFuncion(m, membersMirror.simpleName); 
     }
-    if (fim != null) {
-      var im = deprecatedFutureValue(fim);
-      if (im is InstanceMirror) {
-        return im.reflectee;
-      }
+    
+    //Now we try to find out a field or a getter named after the given name
+    var im = null;
+    if (membersMirror is VariableMirror) {
+      im = m.getField(membersMirror.simpleName);
+    }
+    else if (membersMirror is MethodMirror && membersMirror.isGetter) {
+      im = m.getField(membersMirror.simpleName);
+    }
+    else if (membersMirror is MethodMirror && membersMirror.parameters.length == 0) {
+      im = m.invoke(membersMirror.simpleName, []);
+    }
+    if (im != null && im is InstanceMirror) {
+      return im.reflectee;
     }
     return null;
   }
@@ -138,8 +131,7 @@ class MustacheContext {
   
   static Function _toFuncion(InstanceMirror mirror, Symbol method) {
     return (val) {
-      var fim = mirror.invokeAsync(method, [val]);
-      var im = deprecatedFutureValue(fim);
+      var im = mirror.invoke(method, [val]);
       if (im is InstanceMirror) {
         var r = im.reflectee;
         return r;

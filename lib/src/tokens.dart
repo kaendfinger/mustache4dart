@@ -323,11 +323,6 @@ class _StartSectionToken extends _ExpressionToken with _StandAloneLineCapable {
 
   apply(MustacheContext ctx) {
     var val = ctx[name];
-    if (val == true) {
-      // we do not have to find the end section and apply
-      //it's content here
-      return EMPTY_STRING;
-    }
     if (val == null) {
       _computedNext = forEachUntilEndSection(null);
       return EMPTY_STRING;
@@ -348,6 +343,8 @@ class _StartSectionToken extends _ExpressionToken with _StandAloneLineCapable {
       });
       return str;
     }
+    //in any other case
+    return EMPTY_STRING;
   }
 
   forEachUntilEndSection(void f(_Token)) {
