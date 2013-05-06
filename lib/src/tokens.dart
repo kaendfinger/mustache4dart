@@ -55,6 +55,13 @@ abstract class _Token {
   void set next (_Token n) {
     _next = n;
     n.prev = this;
+    notifyAdded(n);
+  }
+  
+  void notifyAdded(_Token t) {
+    if (prev != null) {
+      prev.notifyAdded(t);
+    }
   }
   
   _Token get next => _next;
@@ -240,7 +247,10 @@ class _PartialToken extends _ExpressionToken {
       next.rendable = false;
     }
     if (partial != null) {
-      return render(partial(name), ctx, partial: partial, ident: _ident);      
+      var partialTemplate = partial(name);
+      if (partialTemplate != null) {
+        return render(partial(name), ctx, partial: partial, ident: _ident);        
+      }
     }
     return EMPTY_STRING;
   }
@@ -315,6 +325,7 @@ class _EscapeHtmlToken extends _ExpressionToken {
 class _StartSectionToken extends _ExpressionToken with _StandAloneLineCapable {
   final Delimiter delimiter;
   _Token _computedNext;
+  _EndSectionToken end;
   
   _StartSectionToken(String val, this.delimiter) : super.withSource(val, null);
 
@@ -372,7 +383,19 @@ class _StartSectionToken extends _ExpressionToken with _StandAloneLineCapable {
   
   //The token itself is always rendable
   bool get rendable => true;
-  
+
+  void notifyAdded(_Token t) {
+    if (end == null && t is _EndSectionToken) {
+      if (t.name != this.name) {
+        throw new FormatException("Expected {{/${this.name}}} but got {{/${t.name}}}");         
+      } else {
+        end = t;
+      }
+    } else {
+      super.notifyAdded(t);
+    }
+  }
+
   String toString() => "StartSectionToken($name)";
 }
 
