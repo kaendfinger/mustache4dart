@@ -75,7 +75,9 @@ class _Template {
     if (!(ctx is MustacheContext)) {
       ctx = new MustacheContext(ctx);
     }
-    return list.head.render(ctx, null);
+    StringSink out = new StringBuffer();
+    list.head.render(ctx, out);
+    return out.toString();
   }
   
   String toString() {
@@ -88,6 +90,7 @@ class _TokenList {
   _Token head;
   _Token tail;
   Delimiter _nextDelimiter;
+  final List<_StartSectionToken> startingTokens = [];
   
   _TokenList(Delimiter delimiter, String ident) {
     //Our template should start as an empty string token
@@ -118,8 +121,25 @@ class _TokenList {
     if (other is _DelimiterToken) {
       _nextDelimiter = other.newDelimiter;
     }
+    else if (other is _StartSectionToken) {
+      _addStartingToken(other);
+    }
+    else if (other is _EndSectionToken) {
+      _addEndingToken(other);
+    }
     tail.next = other;
     tail = other;
+  }
+
+  void _addStartingToken(_StartSectionToken t) {
+    startingTokens.add(t);
+  }
+
+  void _addEndingToken(_EndSectionToken t) {
+    var lastStarting = startingTokens.removeLast();
+    if (lastStarting.name != t.name) {
+      throw new FormatException("Expected {{/${lastStarting.name}}} but got {{/${t.name}}}");
+    }
   }
     
   Delimiter get nextDelimiter => _nextDelimiter;

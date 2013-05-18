@@ -31,18 +31,15 @@ abstract class _Token {
     }
   }
   
-  String render(MustacheContext context, [StringBuffer buf]) {
+  void render(MustacheContext context, StringSink out) {
+    if (out == null) throw new Exception("Need an output to write the rendered result");
     var string = apply(context);
-    if (buf == null) {
-      buf = new StringBuffer();
-    }
     if (rendable) {
-      buf.write(string);
+      out.write(string);
     }
     if (next != null) {
-      next.render(context, buf);
+      next.render(context, out);
     }
-    return buf.toString();
   }
   
   StringBuffer apply(MustacheContext context);
@@ -55,13 +52,6 @@ abstract class _Token {
   void set next (_Token n) {
     _next = n;
     n.prev = this;
-    notifyAdded(n);
-  }
-  
-  void notifyAdded(_Token t) {
-    if (prev != null) {
-      prev.notifyAdded(t);
-    }
   }
   
   _Token get next => _next;
@@ -383,18 +373,6 @@ class _StartSectionToken extends _ExpressionToken with _StandAloneLineCapable {
   
   //The token itself is always rendable
   bool get rendable => true;
-
-  void notifyAdded(_Token t) {
-    if (end == null && t is _EndSectionToken) {
-      if (t.name != this.name) {
-        throw new FormatException("Expected {{/${this.name}}} but got {{/${t.name}}}");         
-      } else {
-        end = t;
-      }
-    } else {
-      super.notifyAdded(t);
-    }
-  }
 
   String toString() => "StartSectionToken($name)";
 }
