@@ -87,9 +87,10 @@ class _Template {
 
 class _TokenList {
   StringBuffer buffer;
-  _Token head;
-  _Token tail;
+  Token head;
+  Token tail;
   Delimiter _nextDelimiter;
+  Line line;
   final List<_StartSectionToken> startingTokens = [];
   
   _TokenList(Delimiter delimiter, String ident) {
@@ -108,13 +109,13 @@ class _TokenList {
   }
   
   void addToken(String str, Delimiter del, String ident, Function partial, {last: false}) {
-    _add(new _Token(str, partial, del, ident));
-    if (last && buffer.length > 0) {
-      _add(new _Token(EMPTY_STRING, partial, del, ident)); //to mark the end of the template
-    }
+    _add(new Token(str, partial, del, ident), last);
+    //if (last && buffer.length > 0) {
+    //  _add(new Token(EMPTY_STRING, partial, del, ident)); //to mark the end of the template
+    //}
   }
   
-  void _add(_Token other) {
+  void _add(Token other, [bool last]) {
     if (other == null) {
       return;
     }
@@ -127,6 +128,9 @@ class _TokenList {
     else if (other is _EndSectionToken) {
       _addEndingToken(other);
     }
+    
+    _addToLine(other, last);
+
     tail.next = other;
     tail = other;
   }
@@ -139,6 +143,18 @@ class _TokenList {
     var lastStarting = startingTokens.removeLast();
     if (lastStarting.name != t.name) {
       throw new FormatException("Expected {{/${lastStarting.name}}} but got {{/${t.name}}}");
+    }
+    else {
+      lastStarting.endSection = t;
+    }
+  }
+
+  void _addToLine(Token t, [bool last]) {
+    if (line == null) {
+      line = new Line(t);
+    }
+    else {
+      line = line.add(t, last);
     }
   }
     
@@ -202,4 +218,58 @@ class Delimiter {
   int get openingLength => opening.length;
   
   toString() => "Delimiter($opening, $closing)";
+}
+
+class Line {
+  final tokens = [];
+  bool full = false;
+  bool standAlone = true;
+  Line prev = null;
+
+  Line(Token t) {
+    if (t != null) {
+      add(t, false);
+    }
+  }
+
+  Line add(Token t, [bool eof]) {
+    if (full) {
+      throw new StateError("Line is full. Can not add $t to it.");
+    }
+    if (!_isStandAloneToken(t) && standAlone) {
+      standAlone = false;
+    }
+    tokens.add(t);
+    if (_isEndOfLine(t) || eof) {
+      return _eol();
+    }
+    //in any other case:
+    return this;
+  }
+
+  Line _eol() {
+    _markStandAloneLineTokens();
+    full = true;
+    Line newLine = new Line(null);
+    newLine.prev = this;
+    return newLine;
+  }
+
+  bool _isStandAloneToken(Token t) {
+    return t is StandAloneLineCapable;
+  }
+
+  bool _isEndOfLine(Token t) {
+    return t == NL || t == CRNL;
+  }
+
+  _markStandAloneLineTokens() {
+    if (tokens.length == 1) {
+      standAlone = false;
+    }
+    if (standAlone) {
+      tokens.forEach((t) => t.rendable = false);
+    }
+  }
+
 }
