@@ -92,7 +92,7 @@ class _StringToken extends Token {
   String toString() => "StringToken($name)";
 }
 
-class _SpecialCharToken extends _StringToken implements StandAloneLineCapable {
+class _SpecialCharToken extends _StringToken with StandAloneLineCapable {
   final String ident;
   
   _SpecialCharToken(_val, [this.ident = EMPTY_STRING]) : super(_val);
@@ -191,7 +191,7 @@ class _DelimiterToken extends _ExpressionToken with StandAloneLineCapable {
   }
 }
 
-class _PartialToken extends _ExpressionToken implements StandAloneLineCapable {
+class _PartialToken extends _ExpressionToken with StandAloneLineCapable {
   final Function partial;
   _PartialToken(this.partial, String val) : super.withSource(val, null);
   
