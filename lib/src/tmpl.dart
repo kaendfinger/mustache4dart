@@ -241,7 +241,7 @@ class Line {
     }
   }
 
-  Line add(Token t, [bool eof]) {
+  Line add(Token t, [bool eof = false]) {
     if (full) {
       throw new StateError("Line is full. Can not add $t to it.");
     }

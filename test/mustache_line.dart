@@ -1,3 +1,4 @@
+library mustache_line_tests;
 
 import 'package:unittest/unittest.dart';
 import 'package:mustache4dart/mustache4dart.dart';
@@ -61,7 +62,7 @@ void main() {
       expect(l3.standAlone, isTrue);
     });
 
-    test("Stand empty line should not be considered standAlone", () {
+    test("should not be considered standAlone if empty but part of a template", () {
       //{{#a}}\n{{one}}\n{{/a}}\n\n{{b.two}}\n
       var l_a = new Line(newToken('{{#a}}'));
       var l_one = l_a.add(newToken(NL))
@@ -79,7 +80,7 @@ void main() {
 
       //Make sure that the empty line is actuall an empty line. It only contains a NL char
       expect(l_empty.tokens.length, 1);
-      expect(l_empty.tokens[0], newToken(NL));
+      //expect(l_empty.tokens[0], newToken(NL));
       expect(l_empty.standAlone, isFalse, reason: 'empty line is part of the template and should not be considered as a standAlone one');
 
       expect(l_b.standAlone, isFalse);
