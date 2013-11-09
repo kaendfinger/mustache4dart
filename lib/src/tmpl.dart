@@ -245,15 +245,22 @@ class Line {
     if (full) {
       throw new StateError("Line is full. Can not add $t to it.");
     }
-    if (!_isStandAloneToken(t) && standAlone) {
-      standAlone = false;
-    }
+    markLineAsNonStandAloneIfTokenIsNo(t);
+    
     tokens.add(t);
+    
     if (_isEndOfLine(t) || eof) {
       return _eol();
     }
     //in any other case:
     return this;
+  }
+  
+  markLineAsNonStandAloneIfTokenIsNo(Token t) {
+    bool isTokenStandAlone = t is StandAloneLineCapable;
+    if (standAlone && !isTokenStandAlone) {
+      standAlone = false;
+    }
   }
 
   Line _eol() {
@@ -262,10 +269,6 @@ class Line {
     Line newLine = new Line(null);
     newLine.prev = this;
     return newLine;
-  }
-
-  bool _isStandAloneToken(Token t) {
-    return t is StandAloneLineCapable;
   }
 
   bool _isEndOfLine(Token t) {
