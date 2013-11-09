@@ -127,7 +127,7 @@ class _ObjectReflector {
   }
   
   get(String key) {
-    var declarationMirror = _findMemberMirror(m, key);
+    var declarationMirror = _findDeclarationMirror(m, key);
     
     if (declarationMirror == null) {
       return null;
@@ -155,7 +155,7 @@ class _ObjectReflector {
     return null;
   }
   
-  static DeclarationMirror _findMemberMirror(InstanceMirror m, String declarationName) {
+  static DeclarationMirror _findDeclarationMirror(InstanceMirror m, String declarationName) {
     var declarations = m.type.declarations;
     //members.forEach( (s, v) => print("${s} - ${v}"));
     var declarationMirror = declarations[new Symbol(declarationName)];
