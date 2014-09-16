@@ -260,8 +260,7 @@ class _StartSectionToken extends _ExpressionToken implements StandAloneLineCapab
 
   apply(MustacheContext ctx) {
     var val = ctx[value];
-    //TODO: remove null check by returning a falsey context
-    if (val == null || val.isFalsey) {
+    if (val.isFalsey) {
       return EMPTY_STRING;
     }
     StringBuffer str = new StringBuffer();
@@ -313,8 +312,7 @@ class _InvertedSectionToken extends _StartSectionToken {
   
   apply(MustacheContext ctx) {
     var val = ctx[value];
-    //TODO: remove null check. Always return a falsey context
-    if (val == null || val.isFalsey) {
+    if (val.isFalsey) {
       StringBuffer buf = new StringBuffer();
       forEachUntilEndSection((Token t) {
         var val2 = t.apply(ctx);
