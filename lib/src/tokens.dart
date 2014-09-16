@@ -159,7 +159,7 @@ class _ExpressionToken extends Token {
   
   apply(MustacheContext ctx) {
     var val = ctx[value];
-    if (val == null) {
+    if (val.isFalsey) {
       return EMPTY_STRING;
     }
     if (val.isLambda) {
