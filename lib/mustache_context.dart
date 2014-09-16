@@ -65,14 +65,11 @@ class MustacheContext {
   }
   
   _newMustachContextOrNull(v) {
-    if (v == null) {
-      return null;
+    if (v == null || v == false) {
+      return FALSEY_CONTEXT;
     }
     if (v is Iterable) {
       return new _IterableMustacheContextDecorator(v, this);
-    }
-    if (v == false) {
-      return FALSEY_CONTEXT;
     }
     return new MustacheContext(v, this);
   }
