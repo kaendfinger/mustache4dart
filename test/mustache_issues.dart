@@ -22,12 +22,12 @@ defineTests() {
       expect(out.toString(), "George!");
     });
     test('#16', () => expect(render('{{^x}}x{{/x}}!!!', null), 'x!!!'));
-    test('#16 root cause: For null objects the value of any property should be null', () {
+    test('#16 root cause: For null objects the value of any property should be falsey', () {
       var ctx = new MustacheContext(null);
-      expect(ctx['xxx'], null);
-      expect(ctx['123'], null);
-      expect(ctx[''], null);
-      expect(ctx[null], null);
+      expect(ctx['xxx'].isFalsey, true);
+      expect(ctx['123'].isFalsey, true);
+      expect(ctx[''].isFalsey, true);
+      expect(ctx[null].isFalsey, true);
     });
     test('#17', () => expect(render('{{#a}}[{{{a}}}|{{b}}]{{/a}}', {'a': 'aa', 'b': 'bb'}),'[aa|bb]'));
     test('#17 root cause: setting the same context as a subcontext', () {
