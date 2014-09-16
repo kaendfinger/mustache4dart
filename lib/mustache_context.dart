@@ -24,7 +24,7 @@ class MustacheContext {
   call([arg]) => isLambda ? ctx(arg) : ctx.toString();
 
   operator [](String key) {
-    if (ctx == null) return null;
+    if (ctx == null) return FALSEY_CONTEXT;
     return _getInThisOrParent(key);
   }
   
@@ -50,7 +50,7 @@ class MustacheContext {
       while(i.moveNext()) {
         val = val._getValidValueOrContext(i.current);
         if (val == null) {
-          return null;
+          return FALSEY_CONTEXT;
         }
       }
       return val;
