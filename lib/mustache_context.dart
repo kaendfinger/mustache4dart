@@ -35,7 +35,6 @@ class FalseyContext implements IMustacheContext {
 
 class MustacheContext implements IMustacheContext {
   static const String DOT = '\.';
-  static final FALSEY_CONTEXT = new MustacheContext(false);
   final ctx;
   final MustacheContext parent;
   bool useMirrors = USE_MIRRORS;
@@ -45,12 +44,11 @@ class MustacheContext implements IMustacheContext {
 
   bool get isLambda => ctx is Function;
 
-  bool get isFalsey => ctx == null || ctx == false;
+  bool get isFalsey => false;
 
   call([arg]) => isLambda ? ctx(arg) : ctx.toString();
 
   operator [](String key) {
-    if (ctx == null) return FALSEY_CONTEXT;
     return _getInThisOrParent(key);
   }
 
@@ -60,7 +58,7 @@ class MustacheContext implements IMustacheContext {
     if (result == null && parent != null) {
       result = parent[key];
       if (result != null) {
-        return _newMustachContextOrNull(result.ctx);
+        return _newMustachContext(result.ctx);
       }
     }
     return result;
@@ -76,7 +74,7 @@ class MustacheContext implements IMustacheContext {
       while (i.moveNext()) {
         val = val._getMustachContext(i.current);
         if (val == null) {
-          return FALSEY_CONTEXT;
+          return _newMustachContext(val);
         }
       }
       return val;
@@ -87,17 +85,14 @@ class MustacheContext implements IMustacheContext {
 
   _getMustachContext(String key) {
     var v = _getActualValue(key);
-    return _newMustachContextOrNull(v);
+    return _newMustachContext(v);
   }
 
-  _newMustachContextOrNull(v) {
-    if (v == null || v == false) {
-      return FALSEY_CONTEXT;
+  _newMustachContext(v) {
+    if (v == null) {
+      return null;
     }
-    if (v is Iterable) {
-      return new _IterableMustacheContextDecorator(v, this);
-    }
-    return new MustacheContext(v, this);
+    return new IMustacheContext(v, this);
   }
 
   _getActualValue(String key) {

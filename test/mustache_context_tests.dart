@@ -27,7 +27,7 @@ void defineTests() {
         expect(ctx['reversedLastName'](), 'ςοισάτολαΒ');
       });
       
-      group('iterables', () {
+      group('iterable', () {
         
         test('should return a falsey context given an empty iterable as context', () {
           var ctx = new IMustacheContext([]);
@@ -48,9 +48,21 @@ void defineTests() {
             expect(num.isFalsey, isFalse);
           }
         });
+        
+
+        test('should not allow recursion of iterable contextes of the same name', () {
+          var contextY = {'content': 'Y', 'nodes': []};
+          var contextX = {'content': 'X', 'nodes': [contextY]};
+          var ctx = new MustacheContext(contextX);
+          expect(ctx['nodes'].length, 1);
+          ctx['nodes'].forEach((n) {
+            expect(n['content'](), 'Y');
+            expect(n['nodes'].length, 0);
+          });
+        });
       });
       
-      solo_group('falsey context', () {
+      group('FalseyContext', () {
         test('should be created when wrapping a falsey value', () {
           expect(new IMustacheContext(false).isFalsey, isTrue);
           expect(new IMustacheContext(null).isFalsey, isTrue);
@@ -102,8 +114,7 @@ void defineTests() {
         for (int i = 10; i > 0; i--) {
           p = new _Person("name$i", "lastname$i", p);
         }
-        
-        
+
         MustacheContext ctx = new MustacheContext(p);
         expect(ctx['name'](), 'name1');
         expect(ctx['parent']['lastname'](), 'lastname2');
@@ -133,11 +144,19 @@ void defineTests() {
         expect(ctx['person.name'](), 'George');
       });
       
-      test('Context with another context', () {
-        var ctx = new MustacheContext(new _Person('George', 'Valotasios'), new MustacheContext({'a' : {'one': 1}, 'b': {'two': 2}}));
-        expect(ctx['name'](), 'George');
-        expect(ctx['a']['one'](), '1');
-        expect(ctx['b']['two'](), '2');
+      group('MustacheContext with parent', () {
+        test('should not be queried as soon as the main context have the requiered keys', () {
+          var parent = new IMustacheContext({'a': 'alpha'});
+          var ctx = new IMustacheContext({'a': 'one'}, parent);
+          expect(ctx['a'](), equals('one'));
+        });
+        
+        test('should try the parent context if no value from the current exists', () {
+          var parent = new IMustacheContext({'a': 'alpha', 'b': 'beta'});
+          var ctx = new IMustacheContext({'a': 'one'}, parent);
+          expect(ctx['b'](), equals('beta'));
+        });
+
       });
       
       test('Deep subcontext test', () {
@@ -154,18 +173,6 @@ void defineTests() {
         expect(ctx['a']['b']['c']['one'](), '1', reason: "a.b.c.one == a.one when using $map");
         expect(ctx['a']['b']['c']['two'](), '2', reason: "a.b.c.two == b.two when using $map");
         expect(ctx['a']['b']['c']['three'](), '3');
-      });
-      
-      test('Recursion of iterable contextes', () {
-        var contextY = {'content': 'Y', 'nodes': []};
-        var contextX = {'content': 'X', 'nodes': [contextY]};
-        var ctx = new MustacheContext(contextX);
-        expect(ctx['nodes'], isNotNull);
-        expect(ctx['nodes'].length, 1);
-        ctx['nodes'].forEach((n) {
-          expect(n['content'](), 'Y');
-          expect(n['nodes'].length, 0);
-        });
       });
 
       test('Direct interpolation', () {
