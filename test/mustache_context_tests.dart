@@ -13,17 +13,58 @@ void defineTests() {
         var ctx = new MustacheContext({'k1': 'value1', 'k2': 'value2'});
         expect(ctx['k1'](), 'value1');
         expect(ctx['k2'](), 'value2');
-        expect(ctx['k3'], null);
+        expect(ctx['k3'].isFalsey, true);
+        expect(ctx['k1'].isLambda, false);
       });
       
       test('Simple context with object', () {
         var ctx = new MustacheContext(new _Person('Γιώργος', 'Βαλοτάσιος'));
         expect(ctx['name'](), 'Γιώργος');
         expect(ctx['lastname'](), 'Βαλοτάσιος');
-        expect(ctx['last'], null);
+        expect(ctx['last'].isFalsey, true);
         expect(ctx['fullname'](), 'Γιώργος Βαλοτάσιος');
         expect(ctx['reversedName'](), 'ςογρώιΓ');
         expect(ctx['reversedLastName'](), 'ςοισάτολαΒ');
+      });
+      
+      group('iterables', () {
+        
+        test('should return a falsey context given an empty iterable as context', () {
+          var ctx = new IMustacheContext([]);
+          expect(ctx.isFalsey, isTrue);
+        });
+        
+        test('should not be a lambda', () {
+          var ctx = new IMustacheContext([]);
+          expect(ctx.isLambda, isFalse);
+          
+          var ctx2 = new IMustacheContext([1, 2, 3]);
+          expect(ctx2.isLambda, isFalse);
+        });
+        
+        test('should be an iterable of proper contextes', () {
+          var ctx = new IMustacheContext([1, 2, 3]);
+          for (var num in ctx) {
+            expect(num.isFalsey, isFalse);
+          }
+        });
+      });
+      
+      solo_group('falsey context', () {
+        test('should be created when wrapping a falsey value', () {
+          expect(new IMustacheContext(false).isFalsey, isTrue);
+          expect(new IMustacheContext(null).isFalsey, isTrue);
+        });
+        
+        test('should not be a lambda', () {
+          expect(new IMustacheContext(false).isLambda, isFalse);
+        });
+        
+        test('should not allow the use of the [] operator', () {
+          expect(() {
+            new IMustacheContext(false)['asd'];
+          }, throwsException);
+        });
       });
       
       test('Simple map with list of maps', () {
@@ -31,6 +72,7 @@ void defineTests() {
                                              {'k2': 'item2'}, 
                                              {'k3': {'kk1' : 'subitem1', 'kk2': 'subitem2'}}]});
         expect(ctx['k'].length, 3);
+        expect(ctx['k'].isFalsey, isFalse);
       });
       
       test('Map with list of lists', () {

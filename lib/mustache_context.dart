@@ -7,7 +7,33 @@ import 'dart:mirrors';
 
 const USE_MIRRORS = const bool.fromEnvironment('MIRRORS', defaultValue: true);
 
-class MustacheContext {
+abstract class IMustacheContext {
+  static final FALSEY_CONTEXT = new FalseyContext();
+
+  factory IMustacheContext(ctx, [MustacheContext parent]) {
+    if (ctx == null || ctx == false) {
+      return FALSEY_CONTEXT;
+    }
+    if (ctx is Iterable) {
+      return new _IterableMustacheContextDecorator(ctx, parent);
+    }
+    return new MustacheContext(ctx, parent);
+  }
+
+  bool get isFalsey;
+  bool get isLambda;
+  operator [](String key);
+}
+
+class FalseyContext implements IMustacheContext {
+  bool get isFalsey => true;
+  bool get isLambda => false;
+  operator [](String key) {
+    throw new Exception('Falsey context can not be queried');
+  }
+}
+
+class MustacheContext implements IMustacheContext {
   static const String DOT = '\.';
   static final FALSEY_CONTEXT = new MustacheContext(false);
   final ctx;
@@ -18,7 +44,7 @@ class MustacheContext {
   MustacheContext(this.ctx, [MustacheContext this.parent]);
 
   bool get isLambda => ctx is Function;
-  
+
   bool get isFalsey => ctx == null || ctx == false;
 
   call([arg]) => isLambda ? ctx(arg) : ctx.toString();
@@ -27,14 +53,14 @@ class MustacheContext {
     if (ctx == null) return FALSEY_CONTEXT;
     return _getInThisOrParent(key);
   }
-  
+
   _getInThisOrParent(String key) {
     var result = _getContextForKey(key);
     //if the result is null, try the parent context
     if (result == null && parent != null) {
       result = parent[key];
       if (result != null) {
-        return _newMustachContextOrNull(result.ctx);        
+        return _newMustachContextOrNull(result.ctx);
       }
     }
     return result;
@@ -47,7 +73,7 @@ class MustacheContext {
     if (key.contains(DOT)) {
       Iterator<String> i = key.split(DOT).iterator;
       var val = this;
-      while(i.moveNext()) {
+      while (i.moveNext()) {
         val = val._getMustachContext(i.current);
         if (val == null) {
           return FALSEY_CONTEXT;
@@ -58,12 +84,12 @@ class MustacheContext {
     //else
     return _getMustachContext(key);
   }
-  
+
   _getMustachContext(String key) {
     var v = _getActualValue(key);
     return _newMustachContextOrNull(v);
   }
-  
+
   _newMustachContextOrNull(v) {
     if (v == null || v == false) {
       return FALSEY_CONTEXT;
@@ -73,7 +99,7 @@ class MustacheContext {
     }
     return new MustacheContext(v, this);
   }
-  
+
   _getActualValue(String key) {
     try {
       return ctx[key];
@@ -81,32 +107,36 @@ class MustacheContext {
       //Try to make dart2js understand that when we define USE_MIRRORS = false
       //we do not want to use any reflector
       return (useMirrors && USE_MIRRORS) ? ctxReflector[key] : null;
-    } 
+    }
   }
-  
+
   get ctxReflector {
     if (_ctxReflector == null) {
       _ctxReflector = new _ObjectReflector(ctx);
     }
     return _ctxReflector;
   }
-    
+
   String toString() => "MustacheContext($ctx, $parent)";
 }
 
-class _IterableMustacheContextDecorator extends IterableBase<MustacheContext> {
+class _IterableMustacheContextDecorator extends IterableBase<IMustacheContext> implements IMustacheContext {
   final Iterable ctx;
   final MustacheContext parent;
-  
+
   _IterableMustacheContextDecorator(this.ctx, this.parent);
-  
+
   Iterator<MustacheContext> get iterator => new _MustachContextIteratorDecorator(ctx.iterator, parent);
-  
+
   int get length => ctx.length;
-  
+
   bool get isEmpty => ctx.isEmpty;
-  
+
   bool get isFalsey => isEmpty;
+
+  bool get isLambda => false;
+
+  operator [](String key) => throw new Exception('Iterable can only be iterated. No [] implementation is available');
 }
 
 
@@ -114,11 +144,11 @@ class _IterableMustacheContextDecorator extends IterableBase<MustacheContext> {
 class _MustachContextIteratorDecorator extends Iterator<MustacheContext> {
   final Iterator delegate;
   final MustacheContext parent;
-  
+
   MustacheContext current;
-  
+
   _MustachContextIteratorDecorator(this.delegate, this.parent);
-  
+
   bool moveNext() {
     if (delegate.moveNext()) {
       current = new MustacheContext(delegate.current, parent);
@@ -136,20 +166,20 @@ class _MustachContextIteratorDecorator extends Iterator<MustacheContext> {
  */
 class _ObjectReflector {
   final InstanceMirror m;
-  
+
   factory _ObjectReflector(o) {
     return new _ObjectReflector._(reflect(o));
   }
-  
+
   _ObjectReflector._(this.m);
-  
+
   operator [](String key) {
     var declaration = new _ObjectReflectorDeclaration(m, key);
-    
+
     if (declaration == null) {
       return null;
     }
-    
+
     return declaration.value;
   }
 }
@@ -157,7 +187,7 @@ class _ObjectReflector {
 class _ObjectReflectorDeclaration {
   final InstanceMirror mirror;
   final DeclarationMirror declaration;
-  
+
   factory _ObjectReflectorDeclaration(InstanceMirror m, String declarationName) {
     var declarations = m.type.declarations;
     var declarationMirror = declarations[new Symbol(declarationName)];
@@ -168,33 +198,31 @@ class _ObjectReflectorDeclaration {
     }
     return declarationMirror == null ? null : new _ObjectReflectorDeclaration._(m, declarationMirror);
   }
-  
+
   _ObjectReflectorDeclaration._(this.mirror, this.declaration);
-  
+
   bool get isLambda => declaration is MethodMirror && (declaration as MethodMirror).parameters.length == 1;
-  
+
   Function get lambda => (val) {
     var im = mirror.invoke(declaration.simpleName, [val]);
     if (im is InstanceMirror) {
       var r = im.reflectee;
       return r;
-     }
-     else {
+    } else {
       return null;
-     }
+    }
   };
-  
+
   get value {
     if (isLambda) {
       return lambda;
     }
-    
+
     //Now we try to find out a field or a getter named after the given name
     var im = null;
     if (isVariableOrGetter) {
       im = mirror.getField(declaration.simpleName);
-    }
-    else if (isParameterlessMethod) {
+    } else if (isParameterlessMethod) {
       im = mirror.invoke(declaration.simpleName, []);
     }
     if (im != null && im is InstanceMirror) {
@@ -202,8 +230,8 @@ class _ObjectReflectorDeclaration {
     }
     return null;
   }
-  
+
   bool get isVariableOrGetter => (declaration is VariableMirror) || (declaration is MethodMirror && (declaration as MethodMirror).isGetter);
-  
+
   bool get isParameterlessMethod => declaration is MethodMirror && (declaration as MethodMirror).parameters.length == 0;
 }
