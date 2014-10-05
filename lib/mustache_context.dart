@@ -8,6 +8,7 @@ import 'dart:mirrors';
 const USE_MIRRORS = const bool.fromEnvironment('MIRRORS', defaultValue: true);
 
 final FALSEY_CONTEXT = new FalseyContext();
+const String DOT = '\.';
 
 abstract class IMustacheContext {
   
@@ -35,7 +36,6 @@ class FalseyContext implements IMustacheContext {
 }
 
 class MustacheContext implements IMustacheContext {
-  static const String DOT = '\.';
   final ctx;
   final MustacheContext parent;
   bool useMirrors = USE_MIRRORS;
@@ -57,6 +57,7 @@ class MustacheContext implements IMustacheContext {
     var result = _getContextForKey(key);
     //if the result is null, try the parent context
     if (result == null && parent != null) {
+      //TODO: simplify this return an EMPTY_CONTEXT maybe?
       result = parent[key];
       if (result == null || result.isFalsey) {
         return FALSEY_CONTEXT;
@@ -70,21 +71,9 @@ class MustacheContext implements IMustacheContext {
   }
 
   IMustacheContext _getContextForKey(String key) {
-    if (key == DOT) {
-      return this;
-    }
     if (key.contains(DOT)) {
-      Iterator<String> i = key.split(DOT).iterator;
-      var val = this;
-      while (i.moveNext()) {
-        val = val._getMustachContext(i.current);
-        if (val == null) {
-          return null;
-        }
-      }
-      return val;
+      return new _MustacheContextResolver(key)(this);
     }
-    //else
     return _getMustachContext(key);
   }
 
@@ -157,6 +146,27 @@ class _MustachContextIteratorDecorator extends Iterator<MustacheContext> {
       current = null;
       return false;
     }
+  }
+}
+
+class _MustacheContextResolver {
+  final String key;
+  
+  _MustacheContextResolver(this.key);
+  
+  MustacheContext call(MustacheContext ctx) {
+    if (key == DOT) {
+      return ctx;
+    }
+    Iterator<String> i = key.split(DOT).iterator;
+    var val = ctx;
+    while (i.moveNext()) {
+      val = val._getMustachContext(i.current);
+      if (val == null) {
+        return null;
+      }
+    }
+    return val;
   }
 }
 
