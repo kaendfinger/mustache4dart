@@ -2,6 +2,7 @@ library mustache_tests;
 
 import 'package:unittest/unittest.dart';
 import 'package:mustache4dart/mustache4dart.dart';
+import 'mustache_test_utils.dart' as utils;
 
 void main() {
   defineTests();
@@ -43,24 +44,15 @@ void defineTests() {
                'e': false};
     var ctmpl = compile(tmpl);
     
-    var warmup = duration(100, () => "${ctmpl(map)}--${render(tmpl, map)}");
+    var warmup = utils.duration(100, () => "${ctmpl(map)}--${render(tmpl, map)}");
     print("Warmup rendering of template with length ${tmpl.length} took ${warmup}millis");
     
-    var d = duration(100, () => render(tmpl, map));
+    var d = utils.duration(100, () => render(tmpl, map));
     print("100 iterations of uncompiled rendering took ${d}millis");
     
-    var d2 = duration(100, () => ctmpl(map));
+    var d2 = utils.duration(100, () => ctmpl(map));
     print("100 iterations of compiled rendering tool ${d2}millis");
     
     test('Compiled templates should be at least 2 times faster', () => expect(d2 < (d/2), isTrue));
   });
-}
-
-num duration(int reps, f()) {
-  var start = new DateTime.now();
-  for (int i = 0; i < reps; i++) {
-    f();
-  }
-  var end = new DateTime.now();
-  return end.millisecondsSinceEpoch - start.millisecondsSinceEpoch;
 }
