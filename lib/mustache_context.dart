@@ -7,9 +7,10 @@ import 'dart:mirrors';
 
 const USE_MIRRORS = const bool.fromEnvironment('MIRRORS', defaultValue: true);
 
-abstract class IMustacheContext {
-  static final FALSEY_CONTEXT = new FalseyContext();
+final FALSEY_CONTEXT = new FalseyContext();
 
+abstract class IMustacheContext {
+  
   factory IMustacheContext(ctx, [MustacheContext parent]) {
     if (ctx == null || ctx == false) {
       return FALSEY_CONTEXT;
@@ -22,13 +23,13 @@ abstract class IMustacheContext {
 
   bool get isFalsey;
   bool get isLambda;
-  operator [](String key);
+  IMustacheContext operator [](String key);
 }
 
 class FalseyContext implements IMustacheContext {
   bool get isFalsey => true;
   bool get isLambda => false;
-  operator [](String key) {
+  IMustacheContext operator [](String key) {
     throw new Exception('Falsey context can not be queried');
   }
 }
@@ -48,23 +49,27 @@ class MustacheContext implements IMustacheContext {
 
   call([arg]) => isLambda ? ctx(arg) : ctx.toString();
 
-  operator [](String key) {
+  IMustacheContext operator [](String key) {
     return _getInThisOrParent(key);
   }
 
-  _getInThisOrParent(String key) {
+  IMustacheContext _getInThisOrParent(String key) {
     var result = _getContextForKey(key);
     //if the result is null, try the parent context
     if (result == null && parent != null) {
       result = parent[key];
-      if (result != null) {
-        return _newMustachContext(result.ctx);
+      if (result == null || result.isFalsey) {
+        return FALSEY_CONTEXT;
       }
+      return _newMustachContext(result.ctx);
+    }
+    if (result == null) {
+      return FALSEY_CONTEXT;
     }
     return result;
   }
 
-  _getContextForKey(String key) {
+  IMustacheContext _getContextForKey(String key) {
     if (key == DOT) {
       return this;
     }
@@ -74,7 +79,7 @@ class MustacheContext implements IMustacheContext {
       while (i.moveNext()) {
         val = val._getMustachContext(i.current);
         if (val == null) {
-          return _newMustachContext(val);
+          return null;
         }
       }
       return val;
@@ -83,12 +88,12 @@ class MustacheContext implements IMustacheContext {
     return _getMustachContext(key);
   }
 
-  _getMustachContext(String key) {
+  IMustacheContext _getMustachContext(String key) {
     var v = _getActualValue(key);
     return _newMustachContext(v);
   }
 
-  _newMustachContext(v) {
+  IMustacheContext _newMustachContext(v) {
     if (v == null) {
       return null;
     }

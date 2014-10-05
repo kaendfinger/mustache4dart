@@ -115,7 +115,7 @@ void defineTests() {
           p = new _Person("name$i", "lastname$i", p);
         }
 
-        MustacheContext ctx = new MustacheContext(p);
+        var ctx = new IMustacheContext(p);
         expect(ctx['name'](), 'name1');
         expect(ctx['parent']['lastname'](), 'lastname2');
         expect(ctx['parent']['parent']['fullname'](), 'name3 lastname3');
@@ -157,6 +157,11 @@ void defineTests() {
           expect(ctx['b'](), equals('beta'));
         });
 
+        test('should not try the parent if the value of the current is exists and is falsey', () {
+          var parent = new IMustacheContext({'a': 'alpha', 'b': 'beta'});
+          var ctx = new IMustacheContext({'a': 'one', 'b': false}, parent);
+          expect(ctx['b'].isFalsey, isTrue);
+        });
       });
       
       test('Deep subcontext test', () {
@@ -164,11 +169,11 @@ void defineTests() {
         var ctx = new MustacheContext({'a': {'one': 1}, 'b': {'two': 2}, 'c': {'three': 3}});
         expect(ctx['a'], isNotNull, reason: "a should exists when using $map");
         expect(ctx['a']['one'](), '1');
-        expect(ctx['a']['two'], isNull);
+        expect(ctx['a']['two'].isFalsey, isTrue);
         expect(ctx['a']['b'], isNotNull, reason: "a.b should exists when using $map");
         expect(ctx['a']['b']['one'](), '1', reason: "a.b.one == a.own when using $map");
         expect(ctx['a']['b']['two'](), '2', reason: "a.b.two == b.two when using $map");
-        expect(ctx['a']['b']['three'], isNull);
+        expect(ctx['a']['b']['three'].isFalsey, isTrue);
         expect(ctx['a']['b']['c'], isNotNull, reason: "a.b.c should not be null when using $map");
         expect(ctx['a']['b']['c']['one'](), '1', reason: "a.b.c.one == a.one when using $map");
         expect(ctx['a']['b']['c']['two'](), '2', reason: "a.b.c.two == b.two when using $map");
@@ -204,7 +209,7 @@ void defineTests() {
         var contactInfo = new _ContactInfo('type', 'value');
         var ctx = new MustacheContext(contactInfo, null);
         ctx.useMirrors = false;
-        expect(ctx['type'], isNull);
+        expect(ctx['type'].isFalsey, isTrue);
       });
       
       //TODO: add check for lambda returned from within a map
