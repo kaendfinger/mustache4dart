@@ -31,20 +31,20 @@ void defineTests() {
       group('iterable', () {
         
         test('should return a falsey context given an empty iterable as context', () {
-          var ctx = new IMustacheContext([]);
+          var ctx = new MustacheContext([]);
           expect(ctx.isFalsey, isTrue);
         });
         
         test('should not be a lambda', () {
-          var ctx = new IMustacheContext([]);
+          var ctx = new MustacheContext([]);
           expect(ctx.isLambda, isFalse);
           
-          var ctx2 = new IMustacheContext([1, 2, 3]);
+          var ctx2 = new MustacheContext([1, 2, 3]);
           expect(ctx2.isLambda, isFalse);
         });
         
         test('should be an iterable of proper contextes', () {
-          var ctx = new IMustacheContext([1, 2, 3]);
+          var ctx = new MustacheContext([1, 2, 3]);
           for (var num in ctx) {
             expect(num.isFalsey, isFalse);
           }
@@ -65,17 +65,17 @@ void defineTests() {
       
       group('FalseyContext', () {
         test('should be created when wrapping a falsey value', () {
-          expect(new IMustacheContext(false).isFalsey, isTrue);
-          expect(new IMustacheContext(null).isFalsey, isTrue);
+          expect(new MustacheContext(false).isFalsey, isTrue);
+          expect(new MustacheContext(null).isFalsey, isTrue);
         });
         
         test('should not be a lambda', () {
-          expect(new IMustacheContext(false).isLambda, isFalse);
+          expect(new MustacheContext(false).isLambda, isFalse);
         });
         
         test('should not allow the use of the [] operator', () {
           expect(() {
-            new IMustacheContext(false)['asd'];
+            new MustacheContext(false)['asd'];
           }, throwsException);
         });
       });
@@ -116,7 +116,7 @@ void defineTests() {
           p = new _Person("name$i", "lastname$i", p);
         }
 
-        var ctx = new IMustacheContext(p);
+        var ctx = new MustacheContext(p);
         expect(ctx['name'](), 'name1');
         expect(ctx['parent']['lastname'](), 'lastname2');
         expect(ctx['parent']['parent']['fullname'](), 'name3 lastname3');
@@ -147,20 +147,20 @@ void defineTests() {
       
       group('MustacheContext with parent', () {
         test('should not be queried as soon as the main context have the requiered keys', () {
-          var parent = new IMustacheContext({'a': 'alpha'});
-          var ctx = new IMustacheContext({'a': 'one'}, parent);
+          var parent = new MustacheContext({'a': 'alpha'});
+          var ctx = new MustacheContext({'a': 'one'}, parent);
           expect(ctx['a'](), equals('one'));
         });
         
         test('should try the parent context if no value from the current exists', () {
-          var parent = new IMustacheContext({'a': 'alpha', 'b': 'beta'});
-          var ctx = new IMustacheContext({'a': 'one'}, parent);
+          var parent = new MustacheContext({'a': 'alpha', 'b': 'beta'});
+          var ctx = new MustacheContext({'a': 'one'}, parent);
           expect(ctx['b'](), equals('beta'));
         });
 
         test('should not try the parent if the value of the current is exists and is falsey', () {
-          var parent = new IMustacheContext({'a': 'alpha', 'b': 'beta'});
-          var ctx = new IMustacheContext({'a': 'one', 'b': false}, parent);
+          var parent = new MustacheContext({'a': 'alpha', 'b': 'beta'});
+          var ctx = new MustacheContext({'a': 'one', 'b': false}, parent);
           expect(ctx['b'].isFalsey, isTrue);
         });
       });
