@@ -2,6 +2,7 @@ library mustache_context_tests;
 
 import 'package:unittest/unittest.dart';
 import 'package:mustache4dart/mustache_context.dart';
+import 'mustache_test_utils.dart' as utils;
 
 void main() {
   defineTests();  
@@ -213,6 +214,51 @@ void defineTests() {
       });
       
       //TODO: add check for lambda returned from within a map
+    });
+    
+    solo_group('performance', () {
+      test('simple map usage', () {
+        var dur = utils.duration(10000, () {
+          var ctx = new IMustacheContext({'a': 'a', 'b': 'b'});
+          expect(ctx['a'](), equals('a'));
+          expect(ctx['b'](), equals('b'));
+          expect(ctx['c'].isFalsey, isTrue);
+        });
+        print("Did simple map usage in $dur millis");
+      });
+      
+      test('simple map usage 2', () {
+        var nodes = {'nodes': {}};
+        var map = {'nodes': nodes, 'first': '1st'};
+        for (var i = 0; i< 100; i++) {
+          nodes['nodes'] = {};
+          nodes = nodes['nodes'];
+        }
+        
+        nodes['last'] = 'last';
+        
+        var dur = utils.duration(10000, () {
+          var ctx = new IMustacheContext(map);
+          var n = ctx['nodes'];
+          while (!n['last'].isFalsey) {
+            n = n['nodes'];
+          }
+          expect(n['first'](), equals('1st'));
+        });
+        print("Did simple map usage 2 in $dur millis");
+      });
+      
+      test('simple Object usage (reflection)', () {
+        var ctx = new IMustacheContext(new _Person('name', 'lastname'));
+
+        var dur = utils.duration(10000, () {
+          expect(ctx['name'](), equals('name'));
+          expect(ctx['lastname'](), equals('lastname'));
+          expect(ctx['fullname'](), equals('name lastname'));
+          expect(ctx['reversedName'](), equals('eman'));
+        });
+        print("Did object usage in $dur millis");
+      });
     });
 }
 
