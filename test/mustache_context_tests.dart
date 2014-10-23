@@ -56,7 +56,8 @@ void defineTests() {
           var contextX = {'content': 'X', 'nodes': [contextY]};
           var ctx = new MustacheContext(contextX);
           expect(ctx['nodes'].length, 1);
-          ctx['nodes'].forEach((n) {
+          expect(ctx['nodes'] is Iterable, isTrue);
+          (ctx['nodes'] as Iterable) .forEach((n) {
             expect(n['content'](), 'Y');
             expect(n['nodes'].length, 0);
           });
