@@ -187,6 +187,12 @@ void defineTests() {
         expect(ctx['n2']['.'](), '2.0'); 
         expect(ctx['s']['.'](), 'some string'); 
       });
+      
+      test('Direct list interpolation',  () {
+        var list = [1, 'two', 'three', '4'];
+        var ctx = new MustacheContext(list);
+        expect(ctx['.'] is Iterable, isTrue);
+      });
     });
     
     group('Mirrorless mustache_context lib', () {
@@ -219,7 +225,7 @@ void defineTests() {
     solo_group('performance', () {
       test('simple map usage', () {
         var dur = utils.duration(10000, () {
-          var ctx = new IMustacheContext({'a': 'a', 'b': 'b'});
+          var ctx = new MustacheContext({'a': 'a', 'b': 'b'});
           expect(ctx['a'](), equals('a'));
           expect(ctx['b'](), equals('b'));
           expect(ctx['c'].isFalsey, isTrue);
@@ -238,7 +244,7 @@ void defineTests() {
         nodes['last'] = 'last';
         
         var dur = utils.duration(10000, () {
-          var ctx = new IMustacheContext(map);
+          var ctx = new MustacheContext(map);
           var n = ctx['nodes'];
           while (!n['last'].isFalsey) {
             n = n['nodes'];
@@ -249,7 +255,7 @@ void defineTests() {
       });
       
       test('simple Object usage (reflection)', () {
-        var ctx = new IMustacheContext(new _Person('name', 'lastname'));
+        var ctx = new MustacheContext(new _Person('name', 'lastname'));
 
         var dur = utils.duration(10000, () {
           expect(ctx['name'](), equals('name'));
