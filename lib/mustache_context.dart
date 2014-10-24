@@ -30,7 +30,7 @@ abstract class MustacheContext {
 class FalseyContext implements MustacheContext {
   bool get isFalsey => true;
   bool get isLambda => false;
-  MustacheContext operator [](String key) => throw new Exception('Falsey context can not be queried');
+  MustacheContext operator [](String key) => this;
 }
 
 

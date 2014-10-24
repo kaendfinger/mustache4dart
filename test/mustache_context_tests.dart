@@ -74,10 +74,11 @@ void defineTests() {
           expect(new MustacheContext(false).isLambda, isFalse);
         });
         
-        test('should not allow the use of the [] operator', () {
-          expect(() {
-            new MustacheContext(false)['asd'];
-          }, throwsException);
+        test('should only return falsey context with [] operator', () {
+          var ctx = new MustacheContext(false);
+          expect(ctx['asd'], ctx);
+          expect(ctx['.'], ctx);
+          expect(ctx['qwerty'], ctx);
         });
       });
       
@@ -240,7 +241,7 @@ void defineTests() {
       //TODO: add check for lambda returned from within a map
     });
     
-    solo_group('performance', () {
+    group('performance', () {
       test('simple map usage', () {
         var dur = utils.duration(10000, () {
           var ctx = new MustacheContext({'a': 'a', 'b': 'b'});
