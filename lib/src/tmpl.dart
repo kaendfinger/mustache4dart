@@ -86,14 +86,11 @@ class _Template {
     if (list.head == null) {
       return EMPTY_STRING;
     }
-    if (!(ctx is MustacheContext)) {
-      ctx = new MustacheContext(ctx);
-    }
 
     //Iterate the tokens and apply the context
     Token token = list.head;
     while (token != null) {
-      token = token(ctx, out);
+      token = token(new MustacheContext(ctx), out);
     }
   }
   

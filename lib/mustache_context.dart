@@ -15,6 +15,9 @@ abstract class MustacheContext {
     if (ctx == null || ctx == false) {
       return FALSEY_CONTEXT;
     }
+    if (ctx is MustacheContext) {
+      return ctx;
+    }
     if (ctx is Iterable) {
       return new _IterableMustacheContextDecorator(ctx, parent);
     }
