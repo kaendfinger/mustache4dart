@@ -230,7 +230,6 @@ class Line {
   final tokens = [];
   bool full = false;
   bool standAlone = true;
-  Line prev = null;
 
   Line(Token t) {
     if (t != null) {
@@ -256,9 +255,7 @@ class Line {
   Line _eol() {
     _markStandAloneLineTokens();
     full = true;
-    Line newLine = new Line(null);
-    newLine.prev = this;
-    return newLine;
+    return new Line(null);
   }
 
   bool _isStandAloneToken(Token t) {
