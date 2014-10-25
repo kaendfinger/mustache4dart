@@ -9,14 +9,16 @@ void main() {
     newToken (String s) => new Token(s, null, del, null);
 
     test('Should not accept more tokens when it is full', () {
-      var l = new Line(newToken('Random text'));
+      var l = new Line()
+        ..add(newToken('Random text'));
       l.add(newToken('Random text2'));
       l.add(newToken(NL));
       expect(() => l.add(newToken('Some more random text')), throwsStateError);
     });
 
     test('add method should return the right line to add more stuff', () {
-      var l = new Line(newToken('some text'));
+      var l = new Line()
+        ..add(newToken('some text'));
       var l2 = l.add(newToken('some more text'));
       expect(l2, same(l));
       var nl = l.add(newToken(NL));
@@ -24,19 +26,22 @@ void main() {
     });
 
     test('Should not be standalone if it contains a string token', () {
-      var l = new Line(newToken('Some text!'));
+      var l = new Line()
+        ..add(newToken('Some text!'));
       expect(l.standAlone, isFalse);
     });
 
     test("Expression tokens should be considered stand alone capable", () {
-      var l = new Line(newToken(' '));
+      var l = new Line()
+        ..add(newToken(' '));
       l.add(newToken(' '));
       l.add(newToken('{{/xxx}}'));
       expect(l.standAlone, isTrue);
     });
 
     test("Last line with an expression only should be considered standalone", () {
-      var l = new Line(newToken(' '));
+      var l = new Line()
+        ..add(newToken(' '));
       l = l.add(newToken(NL))
         .add(newToken(' '))
         .add(newToken(' '))
@@ -46,7 +51,8 @@ void main() {
     });
 
     test("Last line should not end with a new line", () {
-      var l = new Line(newToken('#'))
+      var l = new Line()
+        ..add(newToken('#'))
         .add(newToken('{{#a}}'));
       var l2 = l.add(newToken(NL))
         .add(newToken('/'));
@@ -63,7 +69,8 @@ void main() {
 
     test("Stand empty line should not be considered standAlone", () {
       //{{#a}}\n{{one}}\n{{/a}}\n\n{{b.two}}\n
-      var l_a = new Line(newToken('{{#a}}'));
+      var l_a = new Line()
+        ..add(newToken('{{#a}}'));
       var l_one = l_a.add(newToken(NL))
         .add(newToken('{{one}}'));
       var l_a_end = l_one.add(newToken(NL))
@@ -86,7 +93,8 @@ void main() {
     });
 
     test("Should cosider partial tag followed by a newline as an standAlone line", () {
-      var l = new Line(newToken('|'))
+      var l = new Line()
+        ..add(newToken('|'))
         .add(newToken(CRNL))
         .add(newToken('{{> p}}'));
       var l2 = l.add(newToken(CRNL))

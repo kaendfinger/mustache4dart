@@ -104,7 +104,7 @@ class _TokenList {
   Token head;
   Token tail;
   Delimiter _nextDelimiter;
-  Line line = new Line(null);
+  Line line = new Line();
   final List<_StartSectionToken> startingTokens = [];
   
   _TokenList(Delimiter delimiter, String ident) {
@@ -230,13 +230,7 @@ class Line {
   final tokens = [];
   bool full = false;
   bool standAlone = true;
-
-  Line(Token t) {
-    if (t != null) {
-      add(t, false);
-    }
-  }
-
+  
   Line add(Token t, [bool eof]) {
     if (full) {
       throw new StateError("Line is full. Can not add $t to it.");
@@ -255,7 +249,7 @@ class Line {
   Line _eol() {
     _markStandAloneLineTokens();
     full = true;
-    return new Line(null);
+    return new Line();
   }
 
   bool _isStandAloneToken(Token t) {
