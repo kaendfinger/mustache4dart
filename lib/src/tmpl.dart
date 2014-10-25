@@ -100,19 +100,20 @@ class _Template {
 }
 
 class _TokenList {
-  StringBuffer buffer;
+  final List<_StartSectionToken> startingTokens = [];
+  
+  StringBuffer buffer = new StringBuffer();
+  Line line = new Line();
+  
   Token head;
   Token tail;
   Delimiter _nextDelimiter;
-  Line line = new Line();
-  final List<_StartSectionToken> startingTokens = [];
+  
   
   _TokenList(Delimiter delimiter, String ident) {
     //Our template should start as an empty string token
-    head = new _SpecialCharToken(EMPTY_STRING, ident);
-    tail = head;
+    tail = head = new _SpecialCharToken(EMPTY_STRING, ident);
     _nextDelimiter = delimiter;
-    buffer = new StringBuffer();
   }
   
   void addTokenWithBuffer(Delimiter del, String ident, Function partial, {last: false}) {
