@@ -68,6 +68,8 @@ abstract class Token {
   }  
   
   int get hashCode => value.hashCode;
+  
+  String toString() => "${this.runtimeType}($value)";
 }
 
 abstract class StandAloneLineCapable {
@@ -85,8 +87,6 @@ class _StringToken extends Token {
   apply(context) => value;
   
   String get value => _source;
-
-  String toString() => "StringToken($value)";
 }
 
 class _SpecialCharToken extends _StringToken implements StandAloneLineCapable {
@@ -110,12 +110,7 @@ class _SpecialCharToken extends _StringToken implements StandAloneLineCapable {
   
   bool get _isNewLineOrEmpty => _isNewLine || value == EMPTY_STRING;
   
-  bool get _isNewLine => value == NL || value == CRNL; 
-  
-  String toString() {
-    var val = value.replaceAll('\r', '\\r').replaceAll(NL, '\\n');
-    return "SpecialCharToken($val)";
-  }
+  bool get _isNewLine => value == NL || value == CRNL;
 }
 
 /**
@@ -168,8 +163,6 @@ class _ExpressionToken extends Token {
     }
     return val();
   }
-  
-  String toString() => "ExpressionToken($value)";
 }
 
 class _DelimiterToken extends _ExpressionToken implements StandAloneLineCapable {
@@ -226,8 +219,6 @@ class _CommentToken extends _ExpressionToken implements StandAloneLineCapable {
   _CommentToken() : super.withSource(EMPTY_STRING, EMPTY_STRING);
   
   apply(MustacheContext ctx) => EMPTY_STRING;
-
-  String toString() => "_CommentsToken()";
 }
 
 class _EscapeHtmlToken extends _ExpressionToken {
@@ -241,8 +232,6 @@ class _EscapeHtmlToken extends _ExpressionToken {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&apos;");
   }
-  
-  String toString() => "EscapeHtmlToken($value)";
 }
 
 class _StartSectionToken extends _ExpressionToken implements StandAloneLineCapable {
@@ -291,16 +280,12 @@ class _StartSectionToken extends _ExpressionToken implements StandAloneLineCapab
   
   //The token itself is always rendable
   bool get rendable => true;
-
-  String toString() => "StartSectionToken($value)";
 }
 
 class _EndSectionToken extends _ExpressionToken implements StandAloneLineCapable {
   _EndSectionToken(String val) : super.withSource(val, null);
 
   apply(MustacheContext ctx, [partial]) => EMPTY_STRING;
-  
-  String toString() => "EndSectionToken($value)";
 }
 
 class _InvertedSectionToken extends _StartSectionToken {
@@ -319,7 +304,5 @@ class _InvertedSectionToken extends _StartSectionToken {
     //else just return an empty string
     return EMPTY_STRING;
   }
-  
-  String toString() => "InvertedSectionToken($value)";
 }
 
