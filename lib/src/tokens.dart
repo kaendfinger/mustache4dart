@@ -32,7 +32,6 @@ abstract class Token {
   }
   
   Token call(MustacheContext context, StringSink out) {
-    if (out == null) throw new Exception("Need an output to write the rendered result");
     var string = apply(context);
     if (rendable) {
       out.write(string);
@@ -268,9 +267,6 @@ class _StartSectionToken extends _ExpressionToken implements StandAloneLineCapab
   }
 
   forEachUntilEndSection(void f(Token)) {
-    if (f == null) {
-      throw new Exception('Can not apply a null function!');
-    }
     Token n = super.next;
     while (!identical(n, endSection)) {
       f(n);

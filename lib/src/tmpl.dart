@@ -4,9 +4,6 @@ class _Template {
   final _TokenList list;
   
   factory _Template({String template, Delimiter delimiter, String ident, Function partial}) {
-    if (template == null) {
-      throw new FormatException("The given template is null");
-    }
     _TokenList tokens = new _TokenList(delimiter, ident);
 
     bool searchForOpening = true;
@@ -229,13 +226,9 @@ class Delimiter {
 
 class Line {
   final tokens = [];
-  bool full = false;
   bool standAlone = true;
   
   Line add(Token t, [bool eof]) {
-    if (full) {
-      throw new StateError("Line is full. Can not add $t to it.");
-    }
     if (!_isStandAloneToken(t) && standAlone) {
       standAlone = false;
     }
@@ -249,7 +242,6 @@ class Line {
 
   Line _eol() {
     _markStandAloneLineTokens();
-    full = true;
     return new Line();
   }
 
