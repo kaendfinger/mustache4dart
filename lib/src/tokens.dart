@@ -234,12 +234,8 @@ class _EscapeHtmlToken extends _ExpressionToken {
   _EscapeHtmlToken(String val, String source) : super.withSource(val, source);
 
   apply(MustacheContext ctx) {
-    var val = super.apply(ctx);
-    if (! (val is String)) {
-      throw new Exception("Computed value ($val) is not a string. Can not apply it");      
-    }
-
-    return val.replaceAll("&", "&amp;")
+    return super.apply(ctx)
+        .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
