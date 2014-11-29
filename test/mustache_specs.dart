@@ -34,13 +34,11 @@ _defineGroupFromFile(filename, text) {
     tearDown (() =>lambdas['Interpolation - Multiple Calls'].reset());
     
     tests.forEach( (t) {
-      var testDescription = new StringBuffer(t['name']);
-      testDescription.write(': ');
-      testDescription.write(t['desc']);
+      var testDescription = "${t['name']}: ${t['desc']}";
       var template = t['template'];
       var data = t['data'];
       var templateOneline = template.replaceAll('\n', '\\n').replaceAll('\r', '\\r');
-      var reason = new StringBuffer("Could not render right '''$templateOneline'''");
+      var reason = "Could not render right '''$templateOneline'''";
       var expected = t['expected'];
       var partials = t['partials'];
       var partial = (String name) {
@@ -54,9 +52,9 @@ _defineGroupFromFile(filename, text) {
       if (data['lambda'] != null) {
         data['lambda'] = lambdas[t['name']];
       }
-      reason.write(" with '$data'");
+      reason = "$reason with '$data'";
       if (partials != null) {
-        reason.write(" and partial: $partials");
+        reason = "$reason and partial: $partials";
       }
       test(testDescription.toString(), () => expect(render(template, data, partial: partial), expected, reason: reason.toString())); 
     });            
